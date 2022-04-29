@@ -1,0 +1,6 @@
+
+name: 'discordModBot'
+version: 1.0
+main: com.finni.discordmodbot.discordModBot
+api-version: 1.18
+depend: [DiscordSRV]
