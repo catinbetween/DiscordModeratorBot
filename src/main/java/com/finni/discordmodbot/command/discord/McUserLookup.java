@@ -29,15 +29,16 @@ import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.user.User;
 
 /** @author Finn Teichmann */
-public class whoIsOnline implements MessageCreateListener {
+public class McUserLookup implements MessageCreateListener {
 
 	DiscordApi discordapi;
 	YamlConfiguration config;
-	String commandPrefix = "!mcuser";
+	String commandPrefix;
 	DiscordSRV discordsrv;
 	List<Long> allowedRoles;
+	List<Long> allowedChannels;
 	
-	public whoIsOnline(DiscordApi api, YamlConfiguration config) {
+	public McUserLookup(DiscordApi api, YamlConfiguration config) {
 		this.discordapi = api;
 		this.config = config;
 		this.discordsrv = (DiscordSRV)Bukkit.getServer().getPluginManager().getPlugin("DiscordSRV");
@@ -46,18 +47,27 @@ public class whoIsOnline implements MessageCreateListener {
         this.config.getStringList("allowed-roles").stream()
             .map(role -> Long.parseLong(role))
             .collect(Collectors.toList());
+		
+		this.allowedChannels =
+        this.config.getStringList("allowed-channels").stream()
+            .map(role -> Long.parseLong(role))
+            .collect(Collectors.toList());
+		
+		this.commandPrefix = this.config.getString("prefix");
 	}
 
-	
-	
 	@Override
     public void onMessageCreate(MessageCreateEvent event) {
+			
+			Boolean isAllowedCommandChannel =  this.allowedChannels.stream()
+				.anyMatch(
+						channelID -> {
+							Boolean yes = Objects.equals(channelID, event.getChannel().getId());
+							return yes;
+						});
 
     if (event.getMessageAuthor().isBotUser()
-        || !event
-            .getChannel()
-            .getIdAsString()
-            .equalsIgnoreCase(this.config.getString("command-channel-id"))
+        || !isAllowedCommandChannel
         || !event.getMessageContent().startsWith(this.commandPrefix)) {
 					return;
 				}
@@ -93,11 +103,6 @@ public class whoIsOnline implements MessageCreateListener {
 					event.getChannel().sendMessage("Sorry, i couldn't check who you are. (0)");
 					return;
 				}
-        // Collect the names of all online players
-        //String onlinePlayers = Bukkit.getOnlinePlayers()
-        //        .stream()
-        //        .map(Player::getName)
-        //        .collect(Collectors.joining(", "));
 				
 				String[] message = event.getMessageContent().split(" ");
 				
@@ -125,8 +130,6 @@ public class whoIsOnline implements MessageCreateListener {
 							Bukkit.getLogger().info(e.toString());
 					}
 				}
-				
-				
 				
 				if(discordIDProvided) {
 					
@@ -169,20 +172,6 @@ public class whoIsOnline implements MessageCreateListener {
 							event.getChannel().sendMessage("Something went wrong! (2)");
 				}
 			}
-				
-//        // Check if there are any online players
-//        if (onlinePlayers.isEmpty()) {
-//            event.getChannel().sendMessage("There are no players online!");
-//            return;
-//        }
-//
-//        // Display the names of all online players
-//        new MessageBuilder()
-//                .append("The following players are currently online:")
-//                .appendCode("", onlinePlayers)
-//                .send(event.getChannel());
-				
-				
     }
 		
 		private MessageBuilder getMessage(User user, OfflinePlayer mcuser) {

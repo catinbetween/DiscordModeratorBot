@@ -8,7 +8,7 @@ package com.finni.discordmodbot;
 
 /** @author Finn Teichmann */
 
-import com.finni.discordmodbot.command.discord.whoIsOnline;
+import com.finni.discordmodbot.command.discord.McUserLookup;
 import java.io.File;
 import java.io.IOException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -75,6 +75,6 @@ public class discordModBot extends JavaPlugin {
         // Log a message that the connection was successful and log the url that is needed to invite the bot
         getLogger().info("Connected to Discord as " + api.getYourself().getDiscriminatedName());
         getLogger().info("Open the following url to invite the bot: " + api.createBotInvite());
-				api.addListener(new whoIsOnline(this.api, this.config));
+				api.addListener(new McUserLookup(this.api, this.config));
     }
 }
