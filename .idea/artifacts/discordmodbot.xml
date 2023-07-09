@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="discordmodbot">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="discordmodbot.jar">
+      <element id="module-output" name="discordmodbot" />
+      <element id="file-copy" path="$PROJECT_DIR$/pom.xml" />
+      <element id="file-copy" path="$PROJECT_DIR$/src/main/resources/plugin.yml" />
+    </root>
+  </artifact>
+</component>
