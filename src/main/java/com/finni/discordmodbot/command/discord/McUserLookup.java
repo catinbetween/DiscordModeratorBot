@@ -6,7 +6,8 @@
 
 package com.finni.discordmodbot.command.discord;
 
-import github.scarsz.discordsrv.DiscordSRV;
+//import github.scarsz.discordsrv.DiscordSRV;
+import net.essentialsx.api.v2.services.discordlink.DiscordLinkService;
 import java.awt.Color;
 import java.util.List;
 import java.util.Objects;
@@ -14,6 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
@@ -34,23 +36,26 @@ public class McUserLookup implements MessageCreateListener {
 	DiscordApi discordapi;
 	YamlConfiguration config;
 	String commandPrefix;
-	DiscordSRV discordsrv;
+	//DiscordSRV discordsrv;
+
+	DiscordLinkService linkApi;
 	List<Long> allowedRoles;
 	List<Long> allowedChannels;
 	
 	public McUserLookup(DiscordApi api, YamlConfiguration config) {
 		this.discordapi = api;
 		this.config = config;
-		this.discordsrv = (DiscordSRV)Bukkit.getServer().getPluginManager().getPlugin("DiscordSRV");
+		this.linkApi = Bukkit.getServicesManager().load(DiscordLinkService.class);
 
-    this.allowedRoles =
+
+		this.allowedRoles =
         this.config.getStringList("allowed-roles").stream()
-            .map(role -> Long.parseLong(role))
+            .map(Long::parseLong)
             .collect(Collectors.toList());
 		
 		this.allowedChannels =
         this.config.getStringList("allowed-channels").stream()
-            .map(role -> Long.parseLong(role))
+            .map(Long::parseLong)
             .collect(Collectors.toList());
 		
 		this.commandPrefix = this.config.getString("prefix");
@@ -59,12 +64,9 @@ public class McUserLookup implements MessageCreateListener {
 	@Override
     public void onMessageCreate(MessageCreateEvent event) {
 			
-			Boolean isAllowedCommandChannel =  this.allowedChannels.stream()
+			boolean isAllowedCommandChannel =  this.allowedChannels.stream()
 				.anyMatch(
-						channelID -> {
-							Boolean yes = Objects.equals(channelID, event.getChannel().getId());
-							return yes;
-						});
+						channelID -> Objects.equals(channelID, event.getChannel().getId()));
 
     if (event.getMessageAuthor().isBotUser()
         || !isAllowedCommandChannel
@@ -82,15 +84,9 @@ public class McUserLookup implements MessageCreateListener {
 					
 					List<Role> dcuserRoles = event.getServer().get().getRoles(commanduser);
 
-					Boolean isAuthorized = allowedRoles.stream().anyMatch(
-						role -> {
-							return dcuserRoles.stream()
-									.anyMatch(
-											dcrole -> {
-												Boolean yes = Objects.equals(dcrole.getId(), role);
-												return yes;
-											});
-                  });
+					boolean isAuthorized = allowedRoles.stream().anyMatch(
+						role -> dcuserRoles.stream()
+									.anyMatch(dcrole -> Objects.equals(dcrole.getId(), role)));
 					if (!isAuthorized){
 					Bukkit.getLogger().warning("User " + commanduser.getDiscriminatedName() + " was not authorized to use this command");
 					event.getChannel().sendMessage("Sorry, You need to have a Moderator Role to do this.");
@@ -114,7 +110,7 @@ public class McUserLookup implements MessageCreateListener {
 
 				String userstring = message[1];
 				
-				Boolean discordIDProvided = false;
+				boolean discordIDProvided = false;
 				User dcuser = null;
 				
 				if(userstring.matches("\\d*")){
@@ -134,7 +130,7 @@ public class McUserLookup implements MessageCreateListener {
 				if(discordIDProvided) {
 					
 					try {
-						UUID uuid = this.discordsrv.getAccountLinkManager().getLinkedAccounts().get(dcuser.getIdAsString());
+						UUID uuid = this.linkApi.getUUID(dcuser.getIdAsString());
 						OfflinePlayer mcuser = Bukkit.getOfflinePlayer(uuid);
 						
 						getMessage(dcuser, mcuser).send(event.getChannel());
@@ -148,8 +144,7 @@ public class McUserLookup implements MessageCreateListener {
 				} else {
 						try {
 							OfflinePlayer mcuser = Bukkit.getOfflinePlayer(userstring);
-							String discordId = this.discordsrv.getAccountLinkManager().getDiscordId(mcuser.getUniqueId());
-
+							String discordId = this.linkApi.getDiscordId(mcuser.getUniqueId());
 							if(discordId.matches("\\d*")){
 								CompletableFuture<User> userF = discordapi.getUserById(discordId);
 								userF.join();
@@ -187,7 +182,7 @@ public class McUserLookup implements MessageCreateListener {
 									.setTitle("User Lookup")
 									.setColor(Color.blue)
 									.addField("MC User", mcuser.getName())
-									.addField("Discord User", user.getNicknameMentionTag(), false)
+									.addField("Discord User", user.getMentionTag(), false)
 									.addField("Discord ID", user.getIdAsString(), false));
 					              
 		}

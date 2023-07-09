@@ -48,7 +48,7 @@ public class discordModBot extends JavaPlugin {
 		this.loadConf();
 			new DiscordApiBuilder()
 				.setToken(botToken) // Set the token of the bot here
-				 .setIntents(Intent.GUILD_PRESENCES, Intent.GUILD_MESSAGES, Intent.GUILD_MEMBERS)
+				 .setIntents(Intent.GUILD_PRESENCES, Intent.GUILD_MESSAGES, Intent.GUILD_MEMBERS, Intent.MESSAGE_CONTENT)
 				.login() // Log the bot in
 				.thenAccept(this::onConnectToDiscord) // Call #onConnectToDiscord(...) after a successful login
 				.exceptionally(error -> {

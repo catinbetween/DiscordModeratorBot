@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
      <groupId>org.javacord</groupId>
     <artifactId>discordmodbot</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>2.0</version>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -12,6 +12,11 @@
     </properties>
     
     <repositories>
+
+        <repository>
+            <id>essentials-snapshots</id>
+            <url>https://repo.essentialsx.net/snapshots/</url>
+        </repository>
         <repository>
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
@@ -19,7 +24,11 @@
         <repository>
             <id>Scarsz-Nexus</id>
             <url>https://nexus.scarsz.me/content/groups/public/</url>
-        </repository>  
+        </repository>
+        <repository>
+            <id>maven</id>
+            <url>https://mvnrepository.com/artifact/</url>
+        </repository>
         <repository>
             <id>dv8tion</id>
             <name>m2-dv8tion</name>
@@ -31,22 +40,34 @@
         <dependency>
             <groupId>org.javacord</groupId>
             <artifactId>javacord</artifactId>
-            <version>3.4.0</version>
+            <version>3.8.0</version>
             <type>pom</type>
             <scope>compile</scope>
         </dependency>
-        <dependency>
+         <dependency>
+             <groupId>net.essentialsx</groupId>
+             <artifactId>EssentialsXDiscordLink</artifactId>
+             <version>2.20.1-SNAPSHOT</version>
+             <scope>provided</scope>
+         </dependency>
+         <dependency>
+             <groupId>net.essentialsx</groupId>
+             <artifactId>EssentialsX</artifactId>
+             <version>2.20.1-SNAPSHOT</version>
+             <scope>provided</scope>
+         </dependency>
+         <dependency>
            <groupId>org.spigotmc</groupId>
            <artifactId>spigot-api</artifactId>
-           <version>1.16.5-R0.1-SNAPSHOT</version>
+           <version>1.20.1-R0.1-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
-        <dependency>
+       <!-- <dependency>
             <groupId>com.discordsrv</groupId>
             <artifactId>discordsrv</artifactId>
             <version>1.25.0</version>
             <scope>provided</scope>
-        </dependency>
+        </dependency>-->
     </dependencies>
     
     <build>
@@ -54,7 +75,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
