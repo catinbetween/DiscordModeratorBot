@@ -8,21 +8,29 @@ package com.finni.discordmodbot;
 
 /** @author Finn Teichmann */
 
+import com.finni.discordmodbot.listener.EssentialsDiscordHook;
 import com.finni.discordmodbot.command.discord.McUserLookup;
 import java.io.File;
 import java.io.IOException;
+
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.intent.Intent;
+import net.essentialsx.api.v2.services.discord.DiscordService;
 
-public class discordModBot extends JavaPlugin {
+
+public class discordModBot extends JavaPlugin
+{
 
 		private DiscordApi api;
+
+		private DiscordService discordService;
+
 		private String botToken = "";
 		private YamlConfiguration config;
-    
+
 		
 		private void loadConf(){
 			File dir = this.getDataFolder(); //Your plugin folder
@@ -30,7 +38,7 @@ public class discordModBot extends JavaPlugin {
 
         File conf = new File(this.getDataFolder() + "/conf.yml"); //This is your external file
         this.config = YamlConfiguration.loadConfiguration(conf); //Get the configuration of your external File
-        //YamlConfiguration config2 = YamlConfiguration.loadConfiguration(this.getResource("conf.yml")); //This is optional, so you can predefine your config. You simply add it to your source as same as your plugin.yml
+
         if(!conf.exists()) { //Check if your external file exists
             try {
                 conf.createNewFile(); //if not so, create a new one
@@ -42,8 +50,8 @@ public class discordModBot extends JavaPlugin {
 					this.botToken = this.config.getString("bot-token");
 				}
 		}
-		
-		@Override
+
+	@Override
     public void onEnable() {
 		this.loadConf();
 			new DiscordApiBuilder()
@@ -53,28 +61,31 @@ public class discordModBot extends JavaPlugin {
 				.thenAccept(this::onConnectToDiscord) // Call #onConnectToDiscord(...) after a successful login
 				.exceptionally(error -> {
 						// Log a warning when the login to Discord failed (wrong token?)
-						getLogger().warning("Failed to connect to Discord! Disabling plugin!");
+						getLogger().warning("Failed to connect to Discord! Disabling plugin! Warning: "+error.getMessage());
 						getPluginLoader().disablePlugin(this);
 						return null;
 				});
-    }
+		}
 
-    @Override
+	@Override
     public void onDisable() {
-			 getLogger().info("onDisable is called!");
-			 if (api != null) {
-            // Make sure to disconnect the bot when the plugin gets disabled
-            api.disconnect();
-            api = null;
-        }
+
+		getLogger().info("onDisable is called!");
+		if (api != null)
+		{
+			// Make sure to disconnect the bot when the plugin gets disabled
+			api.disconnect().join();
+		}
     }
 		
-		private void onConnectToDiscord(DiscordApi api) {
-        this.api = api;
+	private void onConnectToDiscord(DiscordApi api) {
+		this.api = api;
 
-        // Log a message that the connection was successful and log the url that is needed to invite the bot
-        getLogger().info("Connected to Discord as " + api.getYourself().getDiscriminatedName());
-        getLogger().info("Open the following url to invite the bot: " + api.createBotInvite());
-				api.addListener(new McUserLookup(this.api, this.config));
-    }
+		// Log a message that the connection was successful and log the url that is needed to invite the bot
+		getLogger().info("Connected to Discord as " + api.getYourself().getDiscriminatedName());
+		//getLogger().info("Open the following url to invite the bot: " + api.createBotInvite());
+		api.addListener(new McUserLookup(this.api, this.config));
+		this.getServer().getPluginManager().registerEvents(new EssentialsDiscordHook( this.api, this.config), this);
+	}
+
 }
