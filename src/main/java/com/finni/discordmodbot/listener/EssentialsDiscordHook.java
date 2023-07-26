@@ -12,6 +12,8 @@ import net.essentialsx.api.v2.services.discord.DiscordService;
 
 public class EssentialsDiscordHook implements Listener
 {
+
+	static EssentialsDiscordHook instance;
 	private final YamlConfiguration config;
 
 	private final DiscordApi discordapi;
@@ -42,6 +44,14 @@ public class EssentialsDiscordHook implements Listener
 
 		if( kickEventListeningActivated )
 			discordapi.getChannelById( logChannelID).get().asTextChannel().get().sendMessage( "Player " + kicker + " kicked " + kicked + " with reason: " + reason );
+	}
+
+	public static void createNewInstance(DiscordApi discordapi,YamlConfiguration yamlConfiguration ) {
+		instance = new EssentialsDiscordHook(discordapi, yamlConfiguration);
+	}
+
+	public static EssentialsDiscordHook getInstance() {
+		return instance;
 	}
 
 }

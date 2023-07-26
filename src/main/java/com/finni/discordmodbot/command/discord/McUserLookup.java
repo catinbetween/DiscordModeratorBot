@@ -8,31 +8,28 @@ package com.finni.discordmodbot.command.discord;
 
 //import github.scarsz.discordsrv.DiscordSRV;
 
-import net.essentialsx.api.v2.services.discordlink.DiscordLinkService;
-
-import java.awt.Color;
+import java.awt.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.javacord.api.entity.message.MessageBuilder;
-import org.javacord.api.event.message.MessageCreateEvent;
-import org.javacord.api.listener.message.MessageCreateListener;
-
 import java.util.stream.Collectors;
 
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.message.mention.AllowedMentions;
 import org.javacord.api.entity.message.mention.AllowedMentionsBuilder;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.user.User;
+import org.javacord.api.event.message.MessageCreateEvent;
+import org.javacord.api.listener.message.MessageCreateListener;
+
+import net.essentialsx.api.v2.services.discordlink.DiscordLinkService;
 
 
 /**
@@ -41,6 +38,7 @@ import org.javacord.api.entity.user.User;
 public class McUserLookup implements MessageCreateListener
 {
 
+	static McUserLookup instance;
 	DiscordApi discordapi;
 
 	YamlConfiguration config;
@@ -220,4 +218,11 @@ public class McUserLookup implements MessageCreateListener
 
 	}
 
+	public static void createNewInstance(DiscordApi api, YamlConfiguration config){
+		McUserLookup.instance = new McUserLookup(api, config);
+	}
+
+	public static McUserLookup getInstance() {
+		return instance;
+	}
 }
