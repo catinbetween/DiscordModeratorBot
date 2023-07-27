@@ -10,6 +10,8 @@ package com.finni.discordmodbot;
 
 import java.io.File;
 import java.io.IOException;
+
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.javacord.api.DiscordApi;
@@ -18,12 +20,18 @@ import org.javacord.api.entity.intent.Intent;
 
 import com.finni.discordmodbot.command.discord.MainCommand;
 import com.finni.discordmodbot.command.discord.McUserLookup;
+import com.finni.discordmodbot.command.discord.SlashPlayerList;
 import com.finni.discordmodbot.listener.EssentialsDiscordModlogs;
+
+import net.essentialsx.api.v2.services.discord.DiscordService;
+import net.essentialsx.api.v2.services.discord.InteractionException;
 
 
 public class DiscordModBot extends JavaPlugin
 {
 	private DiscordApi api;
+
+	private DiscordService discordService;
 
 	private String botToken = "";
 	private YamlConfiguration config;
@@ -59,6 +67,18 @@ public class DiscordModBot extends JavaPlugin
 
 		loginToDiscord();
 		registerListeners();
+		this.discordService = Bukkit.getServicesManager().load(DiscordService.class);
+		getLogger().info(this.discordService != null ? "discordservice is UP" : "NO DISCORD SERVICE");
+		if( discordService != null ){
+			try
+			{
+				discordService.getInteractionController().registerCommand(new SlashPlayerList());
+			}
+			catch( InteractionException e )
+			{
+				getLogger().severe("no discord service! can't add slash command.");
+			}
+		}
 	}
 
 	@Override
