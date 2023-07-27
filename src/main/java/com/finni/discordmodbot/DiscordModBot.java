@@ -18,17 +18,12 @@ import org.javacord.api.entity.intent.Intent;
 
 import com.finni.discordmodbot.command.discord.MainCommand;
 import com.finni.discordmodbot.command.discord.McUserLookup;
-import com.finni.discordmodbot.listener.EssentialsDiscordHook;
-
-
-import net.essentialsx.api.v2.services.discord.DiscordService;
+import com.finni.discordmodbot.listener.EssentialsDiscordModlogs;
 
 
 public class DiscordModBot extends JavaPlugin
 {
 	private DiscordApi api;
-
-	private DiscordService discordService;
 
 	private String botToken = "";
 	private YamlConfiguration config;
@@ -84,7 +79,7 @@ public class DiscordModBot extends JavaPlugin
 					return null;
 				}).join();
 		McUserLookup.createNewInstance(this.api, this.config);
-		EssentialsDiscordHook.createNewInstance( this.api, this.config );
+		EssentialsDiscordModlogs.createNewInstance( this.api, this.config );
 
 
 		// Log a message that the connection was successful and log the url that is needed to invite the bot
@@ -111,9 +106,9 @@ public class DiscordModBot extends JavaPlugin
 	}
 
 	private void registerListeners() {
-		if(McUserLookup.getInstance() != null && EssentialsDiscordHook.getInstance() != null ) {
+		if(McUserLookup.getInstance() != null && EssentialsDiscordModlogs.getInstance() != null ) {
 			api.addListener(McUserLookup.getInstance());
-			this.getServer().getPluginManager().registerEvents(EssentialsDiscordHook.getInstance(), this);
+			this.getServer().getPluginManager().registerEvents( EssentialsDiscordModlogs.getInstance(), this);
 		} else {
 			getLogger().severe("no discord API! can't add listeners.");
 		}
