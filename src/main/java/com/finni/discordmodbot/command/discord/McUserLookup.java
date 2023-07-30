@@ -9,11 +9,9 @@ package com.finni.discordmodbot.command.discord;
 //import github.scarsz.discordsrv.DiscordSRV;
 
 import java.awt.*;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 import com.finni.discordmodbot.DiscordModBot;
@@ -28,6 +26,7 @@ import org.javacord.api.entity.message.mention.AllowedMentionsBuilder;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
+import org.javacord.api.interaction.*;
 import org.javacord.api.listener.message.MessageCreateListener;
 
 import net.essentialsx.api.v2.services.discordlink.DiscordLinkService;
@@ -46,7 +45,7 @@ public class McUserLookup implements MessageCreateListener
 
 	String commandPrefix;
 
-	DiscordLinkService linkApi;
+	DiscordLinkService discordLinkService;
 
 	List<Long> allowedRoles;
 
@@ -57,7 +56,7 @@ public class McUserLookup implements MessageCreateListener
 	{
 		this.discordapi = DiscordModBot.getInstance().getDiscordAPI();
 		this.config = DiscordModBot.getInstance().getMcModBotconfig();
-		this.linkApi = Bukkit.getServicesManager().load( DiscordLinkService.class );
+		this.discordLinkService = DiscordModBot.getInstance().getDiscordLinkService();
 
 		this.allowedRoles = this.config.getStringList( "allowed-roles" )
 				.stream()
@@ -127,95 +126,191 @@ public class McUserLookup implements MessageCreateListener
 
 		String userstring = message[1];
 
-		boolean discordIDProvided = false;
-		User dcuser = null;
-
-		if( userstring.matches( "\\d*" ) )
-		{
-			try
-			{
-				CompletableFuture<User> userF = discordapi.getUserById( userstring );
-				userF.join();
-				dcuser = userF.get();
-
-				discordIDProvided = true;
-
-			}
-			catch( Exception e )
-			{
-				Bukkit.getLogger().info( "tried to interpret param as DC id and found no one." );
-				Bukkit.getLogger().info( e.toString() );
-			}
-		}
-
-		if( discordIDProvided )
-		{
-
-			try
-			{
-				UUID uuid = this.linkApi.getUUID( dcuser.getIdAsString() );
-				OfflinePlayer mcuser = Bukkit.getOfflinePlayer( uuid );
-
+		try {
+			if( userstring.matches( "\\d*" ) ) {
+				User dcuser = findDiscordUserByID(userstring);
+				OfflinePlayer mcuser = lookUpMCPlayerByDiscordUser(dcuser);
 				getMessage( dcuser, mcuser ).send( event.getChannel() );
-
-			}
-			catch( Exception e )
-			{
-				Bukkit.getLogger().warning( "Something went wrong! (1)" );
-				Bukkit.getLogger().warning( e.toString() );
-				event.getChannel().sendMessage( "Something went wrong! (1)" );
+			} else {
+				OfflinePlayer mcuser = findMCUserByMCName(userstring);
+				User dcuser = lookUpDiscordUserByMCUUID(mcuser.getUniqueId());
+				getMessage( dcuser, mcuser ).send( event.getChannel() );
 			}
 		}
-		else
+		catch( Exception e )
 		{
-			try
-			{
-				OfflinePlayer mcuser = Bukkit.getOfflinePlayer( userstring );
-				String discordId = this.linkApi.getDiscordId( mcuser.getUniqueId() );
-				if( discordId.matches( "\\d*" ) )
-				{
-					CompletableFuture<User> userF = discordapi.getUserById( discordId );
-					userF.join();
-					dcuser = userF.get();
-					getMessage( dcuser, mcuser ).send( event.getChannel() );
-				}
-
-			}
-			catch( NullPointerException e )
-			{
-				Bukkit.getLogger().info( "discord id was null. " );
-				Bukkit.getLogger().info( e.toString() );
-				event.getChannel().sendMessage( "No player found! (2)" );
-			}
-			catch( CompletionException e )
-			{
-				Bukkit.getLogger().info( "Player Could not be found (2)" );
-				Bukkit.getLogger().info( e.toString() );
-				event.getChannel().sendMessage( "No player found! (2)" );
-			}
-			catch( Exception e )
-			{
-				Bukkit.getLogger().warning( "Something went wrong! (2)" );
-				Bukkit.getLogger().warning( e.toString() );
-				event.getChannel().sendMessage( "Something went wrong! (2)" );
-			}
+			Bukkit.getLogger().warning("Something went wrong!" + e.getMessage() );
+			event.getChannel().sendMessage( "Something went wrong!" + e.getMessage());
 		}
 	}
 
+	private User findDiscordUserByID(String discordID) throws Exception {
+		CompletableFuture<User> userF = discordapi.getUserById( discordID );
+		userF.join();
+		User dcuser = userF.get();
+		if(dcuser == null)
+			throw new Exception("Discord-User not found!");
 
-	private MessageBuilder getMessage( User user, OfflinePlayer mcuser )
+		return dcuser;
+	}
+
+	private OfflinePlayer findMCUserByMCName(String mcname) throws Exception {
+
+		OfflinePlayer mcuser  = Bukkit.getOfflinePlayer( mcname );
+
+		if(mcuser == null)
+			throw new Exception("MC-User with given MC-name not found!");
+
+		return mcuser;
+	}
+
+	private OfflinePlayer findMCUserByMCUUID(UUID uuid) throws Exception {
+
+		OfflinePlayer mcuser  = Bukkit.getOfflinePlayer( uuid );
+
+		if(mcuser == null)
+			throw new Exception("MC-User with given UUID not found!");
+		return mcuser;
+	}
+
+	private OfflinePlayer lookUpMCPlayerByDiscordUser(User dcuser) throws Exception {
+
+		User dcuser2 = findDiscordUserByID(dcuser.getIdAsString());
+		UUID uuid = this.discordLinkService.getUUID( dcuser.getIdAsString() );
+
+        return Bukkit.getOfflinePlayer( uuid );
+	}
+
+	private User lookUpDiscordUserByMCUUID(UUID uuid) throws Exception {
+
+		String discordId = this.discordLinkService.getDiscordId( uuid );
+		if(discordId == null) {
+			throw new Exception("Player with given UUID has no Discord Account Linked!");
+		}
+
+        return findDiscordUserByID(discordId);
+	}
+
+	private EmbedBuilder getEmbed(OfflinePlayer mcuser, User dcuser){
+        return new EmbedBuilder().setTitle( "User Lookup" )
+				.setColor( Color.blue )
+				.addField( "MC User", mcuser.getName() )
+				.addField( "Minecraft-UUID", mcuser.getUniqueId().toString(), false )
+				.addField( "Discord User", dcuser.getMentionTag(), false )
+				.addField( "Discord ID", dcuser.getIdAsString(), false );
+	}
+
+	private MessageBuilder getMessage( User dcuser, OfflinePlayer mcuser )
 	{
 
-		AllowedMentions allowedMentions = new AllowedMentionsBuilder().addUser( user.getId() ).build();
+		AllowedMentions allowedMentions = new AllowedMentionsBuilder().addUser( dcuser.getId() ).build();
 
 		return new MessageBuilder().setAllowedMentions( allowedMentions )
-				.append( user.getIdAsString() )
-				.setEmbed( new EmbedBuilder().setTitle( "User Lookup" )
-						.setColor( Color.blue )
-						.addField( "MC User", mcuser.getName() )
-						.addField( "Discord User", user.getMentionTag(), false )
-						.addField( "Discord ID", user.getIdAsString(), false ) );
+				.append( dcuser.getIdAsString() )
+				.append("\n")
+				.append( mcuser.getUniqueId().toString() )
+				.setEmbed( getEmbed(mcuser, dcuser) );
 
+	}
+
+	public void registerSlashCommand(){
+		SlashCommand command =
+			SlashCommand.with("mcuser", "lookup a linked user.",
+				Arrays.asList(
+					SlashCommandOption.createWithOptions(SlashCommandOptionType.SUB_COMMAND, "by-discord-id", "Look up user by their discord ID.",
+						Arrays.asList(
+							SlashCommandOption.create(SlashCommandOptionType.STRING, "Discord-ID", "Example: 123456781234567890", true)
+						)
+					),
+					SlashCommandOption.createWithOptions(SlashCommandOptionType.SUB_COMMAND, "by-discord-username", "Look up user by their Discord username.",
+						Arrays.asList(
+							SlashCommandOption.create(SlashCommandOptionType.USER, "Discord-Username", "Example: @emotionalsupportdemon", true)
+						)
+					),
+					SlashCommandOption.createWithOptions(SlashCommandOptionType.SUB_COMMAND, "by-minecraft-username", "Loop up user by their Minecraft username.",
+						Arrays.asList(
+							SlashCommandOption.create(SlashCommandOptionType.STRING, "Minecraft-Username", "Example: MangoMc", true)
+						)
+					),
+					SlashCommandOption.createWithOptions(SlashCommandOptionType.SUB_COMMAND, "by-minecraft-UUID", "Look up user by their Minecraft UUID.",
+						Arrays.asList(
+							SlashCommandOption.create(SlashCommandOptionType.STRING, "Minecraft-UUID", "Example: a1111bbb-feeb-1234-0000-1abc42069def", true)
+						)
+					)
+				)
+			).setEnabledInDms(false)
+			.createGlobal(discordapi)
+			.join();
+
+		discordapi.addSlashCommandCreateListener(event -> {
+			SlashCommandInteraction interaction = event.getSlashCommandInteraction();
+
+			if (interaction.getFullCommandName().equals("mcuser by-discord-id")) {
+				Optional<String> discordID = interaction.getArgumentStringValueByName("Discord-ID");
+				if(discordID.isPresent()){
+					try {
+						User dcuser = findDiscordUserByID(discordID.get());
+						OfflinePlayer mcuser = lookUpMCPlayerByDiscordUser(dcuser);
+						interaction.createImmediateResponder()
+								.addEmbed(getEmbed(mcuser, dcuser))
+								.append(dcuser.getIdAsString() )
+								.respond();
+					} catch (Exception e) {
+						interaction.createImmediateResponder().append("Something went wrong! " + e.getMessage()).respond();
+					}
+				} else {
+					interaction.createImmediateResponder().append("Something went wrong! Please provide a Discord ID." ).respond();
+				}
+			} else if(interaction.getFullCommandName().equals("mcuser by-discord-username")) {
+				Optional<User> discorduser = interaction.getArgumentUserValueByName("Discord-Username");
+				if(discorduser.isPresent()){
+					try {
+						User dcuser = discorduser.get();
+						OfflinePlayer mcuser = lookUpMCPlayerByDiscordUser(dcuser);
+						interaction.createImmediateResponder()
+								.addEmbed(getEmbed(mcuser, dcuser))
+								.append(dcuser.getIdAsString() )
+								.respond();
+					} catch (Exception e) {
+						interaction.createImmediateResponder().append("Something went wrong! " + e.getMessage()).respond();
+					}
+				} else {
+					interaction.createImmediateResponder().append("Something went wrong! Please provide a discord User." ).respond();
+				}
+			} else if(interaction.getFullCommandName().equals("mcuser by-minecraft-username")) {
+				Optional<String> mcusername = interaction.getArgumentStringValueByName("Minecraft-Username");
+				if(mcusername.isPresent()){
+					try {
+						OfflinePlayer mcuser = findMCUserByMCName(mcusername.get());
+						User dcuser = lookUpDiscordUserByMCUUID(mcuser.getUniqueId());
+						interaction.createImmediateResponder()
+								.addEmbed(getEmbed(mcuser, dcuser))
+								.append(dcuser.getIdAsString() )
+								.respond();
+					} catch (Exception e) {
+						interaction.createImmediateResponder().append("Something went wrong! " + e.getMessage()).respond();
+					}
+				} else {
+					interaction.createImmediateResponder().append("Something went wrong! Please provide a MC-Username." ).respond();
+				}
+			} else if(interaction.getFullCommandName().equals("mcuser by-minecraft-uuid")) {
+				Optional<String> mcuuid = interaction.getArgumentStringValueByName("Minecraft-UUID");
+				if(mcuuid.isPresent()){
+					try {
+						OfflinePlayer mcuser = findMCUserByMCUUID(UUID.fromString(mcuuid.get()));
+						User dcuser = lookUpDiscordUserByMCUUID(mcuser.getUniqueId());
+						interaction.createImmediateResponder()
+								.addEmbed(getEmbed(mcuser, dcuser))
+								.append(dcuser.getIdAsString() )
+								.respond();
+					} catch (Exception e) {
+						interaction.createImmediateResponder().append("Something went wrong! " + e.getMessage()).respond();
+					}
+				} else {
+					interaction.createImmediateResponder().append("Something went wrong! Please provide a UUID." ).respond();
+				}
+			}
+		});
 	}
 
 	public static void createNewInstance(){

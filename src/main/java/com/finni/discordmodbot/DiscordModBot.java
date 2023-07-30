@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 
 import com.finni.discordmodbot.command.discord.slashcommand.SlashRestartTimes;
 import net.essentialsx.api.v2.services.discord.MessageType;
+import net.essentialsx.api.v2.services.discordlink.DiscordLinkService;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -37,6 +38,7 @@ public class DiscordModBot extends JavaPlugin
 
 	private static  DiscordModBot instance;
 	private DiscordService discordService;
+	private DiscordLinkService discordLinkService;
 	private DiscordApi discordAPI;
 	private YamlConfiguration mcModBotConfig;
 	private MainCommand mainDMBCommand;
@@ -84,12 +86,14 @@ public class DiscordModBot extends JavaPlugin
 		try {
 			essentialsRegisterSlashCommandsAndLogChannel();
 		}
-			catch( InteractionException e )
+			catch( Exception e )
 		{
-			getLogger().severe("no discord service! can't add slash command.");
+			getLogger().severe(e.getMessage());
 		}
 		mCModBotLoginToDiscord();
-		registerListeners();
+		Bukkit.getScheduler().runTaskLater(this, () -> {
+			registerListeners();
+		}, 20L*10);
 	}
 
 	@Override
@@ -132,22 +136,39 @@ public class DiscordModBot extends JavaPlugin
 	}
 
 	private void registerListeners() {
-		McUserLookup.createNewInstance();
-		EssentialsDiscordModlogs.createNewInstance();
-		if(McUserLookup.getInstance() != null && EssentialsDiscordModlogs.getInstance() != null ) {
-			this.discordAPI.addListener(McUserLookup.getInstance());
-			this.getServer().getPluginManager().registerEvents( EssentialsDiscordModlogs.getInstance(), this);
+		this.discordLinkService = Bukkit.getServicesManager().load(DiscordLinkService.class);
+		if (discordLinkService != null){
+			McUserLookup.createNewInstance();
+			if(McUserLookup.getInstance() != null) {
+				this.discordAPI.addListener(McUserLookup.getInstance());
+				McUserLookup.getInstance().registerSlashCommand();
+			} else {
+				getLogger().severe("Couldn't register MCUser-lookup command because there was no instance.");
+			}
 		} else {
-			getLogger().severe("no discord API! can't add listeners.");
+			getLogger().severe("no discord link API! can't create MCUserLookup instance.");
+		}
+
+		if(discordAPI != null){
+			EssentialsDiscordModlogs.createNewInstance();
+			if (EssentialsDiscordModlogs.getInstance() != null){
+				this.getServer().getPluginManager().registerEvents( EssentialsDiscordModlogs.getInstance(), this);
+			} else {
+				getLogger().severe("Couldn't register Modlog listeners because there was no instance.");
+			}
+		}else {
+			getLogger().severe("no discord API! can't register listeners.");
 		}
 	}
-	private void essentialsRegisterSlashCommandsAndLogChannel() throws InteractionException{
+	private void essentialsRegisterSlashCommandsAndLogChannel() throws Exception{
 		if( this.discordService != null ){
 
 			this.discordService.getInteractionController().registerCommand(new SlashPlayerList());
 			this.discordService.getInteractionController().registerCommand(new SlashRestartTimes());
 			this.logChannel = new MessageType("modlogs");
 			this.discordService.registerMessageType(this, this.logChannel);
+		} else {
+			throw new Exception("No Discord API! Can't register listeners.");
 		}
 	}
 
@@ -159,6 +180,9 @@ public class DiscordModBot extends JavaPlugin
 	}
 	public DiscordApi getDiscordAPI(){
 		return this.discordAPI;
+	}
+	public DiscordLinkService getDiscordLinkService(){
+		return this.discordLinkService;
 	}
 	public YamlConfiguration getMcModBotconfig(){
 		return this.mcModBotConfig;
