@@ -23,6 +23,7 @@ import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.message.mention.AllowedMentions;
 import org.javacord.api.entity.message.mention.AllowedMentionsBuilder;
+import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
@@ -239,6 +240,8 @@ public class McUserLookup implements MessageCreateListener
 					)
 				)
 			).setEnabledInDms(false)
+			.setDefaultDisabled()
+			.setDefaultEnabledForPermissions(PermissionType.ADMINISTRATOR,PermissionType.MANAGE_MESSAGES)
 			.createGlobal(discordapi)
 			.join();
 
