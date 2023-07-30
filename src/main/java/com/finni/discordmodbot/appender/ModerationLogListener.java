@@ -1,11 +1,11 @@
 package com.finni.discordmodbot.appender;
 
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import com.finni.discordmodbot.DiscordModBot;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.bukkit.Bukkit;
@@ -15,10 +15,21 @@ import com.finni.discordmodbot.event.enums.ModerationType;
 
 public class ModerationLogListener extends AbstractAppender {
 
+	Map<String, Boolean> moderationLogSettings;
+	Map<ModerationType, Pattern> patterns;
+
 	public ModerationLogListener() {
 		// do your calculations here before starting to capture
 		super("ModerationLogListener", null, null);
 		start();
+
+		this.moderationLogSettings = DiscordModBot.getInstance().getMcModBotconfig()
+				.getMapList("moderationLogSettings").stream()
+				.flatMap(e->e.entrySet().stream())
+				.map(entry -> ((Map.Entry<String, Boolean>)entry))
+				.collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+
+		patterns = createPatternList();
 	}
 
 	@Override
@@ -29,51 +40,65 @@ public class ModerationLogListener extends AbstractAppender {
 				|| event.getMessage().getFormat().matches( "(^Banned IP \\S*:(.*)$)|(\\S*: Banned IP \\S*:.*)" )) {
 			String message = event.getMessage().getFormat().replaceAll( "\u001B\\[\\d\\d?m", "" );
 
-			if (matcherList( message ).entrySet().stream().anyMatch( entry -> {
-				Matcher matcher = entry.getValue();
-				return matcher.find();
-			} )) {
-				ModerationLogEvent moderationLogEvent = getModerationLogEvent( matcherList( message ) );
-				Bukkit.getPluginManager().callEvent(moderationLogEvent);
-			}
+			createModerationLogEvent( message ).ifPresent(modEvent -> Bukkit.getPluginManager().callEvent(modEvent));
+
 		}
 
 	}
+	private boolean getModerationLogSetting(String key) {
+		return moderationLogSettings.get(key);
+	}
 
-	private HashMap<ModerationType, Matcher> matcherList(String string) {
-		HashMap<ModerationType, Matcher> matchers = new HashMap<>();
-		matchers.put( ModerationType.TEMPBAN, Pattern.compile( "Player (.*) temporarily banned (\\S*) for (.*):(.*)$" )
-				.matcher( string ));
-		matchers.put( ModerationType.TEMPIPBAN, Pattern.compile( "Player (.*) temporarily banned IP address (\\S*) for (.*):(.*)$" )
-				.matcher( string ));
-		matchers.put( ModerationType.BAN, Pattern.compile( "Player (\\S*) banned (\\S*) for: You have been banned:(\\n.*)" )
-				.matcher( string ));
-		matchers.put( ModerationType.IPBAN1, Pattern.compile( "^Banned IP (\\S*):(.*)$" )
-				.matcher( string ));
-		matchers.put( ModerationType.IPBAN2, Pattern.compile( "\\[(\\S*): Banned IP (\\S*): (.*)\\]" )
-				.matcher( string ));
-		matchers.put( ModerationType.IPBAN3, Pattern.compile( "Player (\\S*) banned IP address (\\S*) for:(.*)$" )
-				.matcher( string ));
-		matchers.put( ModerationType.KICK, Pattern.compile( "Player (\\S*) kicked (\\S*) for (.*)" )
-				.matcher( string ));
-		matchers.put( ModerationType.MUTE, Pattern.compile( "(\\S*) has muted player (\\S*)\\.( ?Reason: (.*))?$" )
-				.matcher( string ));
-		matchers.put( ModerationType.TEMPMUTE, Pattern.compile( "(\\S*) has muted player (\\S*) for (\\d+ \\S*).(Reason: (.*))?$" )
-				.matcher( string ));
-		matchers.put( ModerationType.UNMUTE, Pattern.compile( "^Player (\\S*) unmuted.*$" )
-				.matcher( string ));
-		matchers.put( ModerationType.UNBAN, Pattern.compile( "^Player (\\S*) unbanned (\\S*)$" )
-				.matcher( string ));
-		matchers.put( ModerationType.UNBANIP, Pattern.compile( "^Player (\\S*) unbanned IP: (\\S*$)" )
-				.matcher( string ));
+	private HashMap<ModerationType, Matcher> createMatcherList(String string) {
+		return patterns.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue().matcher(string), (prev, next) -> next, HashMap::new));
+	}
+	private HashMap<ModerationType, Pattern> createPatternList() {
+		HashMap<ModerationType, Pattern> matchers = new HashMap<>();
+
+		if (getModerationLogSetting("kick")) {
+			matchers.put(ModerationType.KICK, Pattern.compile("Player (\\S*) kicked (\\S*) for (.*)"));
+		}
+		if (getModerationLogSetting("ban")) {
+			matchers.put(ModerationType.BAN, Pattern.compile("Player (\\S*) banned (\\S*) for: You have been banned:(\\n.*)"));
+		}
+		if (getModerationLogSetting("tempBan")) {
+			matchers.put(ModerationType.TEMPBAN, Pattern.compile("Player (.*) temporarily banned (\\S*) for (.*):(.*)$"));
+		}
+		if (getModerationLogSetting("tempIPBan")) {
+			matchers.put(ModerationType.TEMPIPBAN, Pattern.compile("Player (.*) temporarily banned IP address (\\S*) for (.*):(.*)$"));
+		}
+		if (getModerationLogSetting("ipBan")) {
+			matchers.put(ModerationType.IPBAN1, Pattern.compile("^Banned IP (\\S*):(.*)$"));
+		}
+		if (getModerationLogSetting("ipBan")) {
+			matchers.put(ModerationType.IPBAN2, Pattern.compile("\\[(\\S*): Banned IP (\\S*): (.*)\\]"));
+		}
+		if (getModerationLogSetting("ipBan")) {
+			matchers.put(ModerationType.IPBAN3, Pattern.compile("Player (\\S*) banned IP address (\\S*) for:(.*)$"));
+		}
+		if (getModerationLogSetting("mute")) {
+			matchers.put(ModerationType.MUTE, Pattern.compile("(\\S*) has muted player (\\S*)\\.( ?Reason: (.*))?$"));
+		}
+		if (getModerationLogSetting("tempMute")) {
+			matchers.put(ModerationType.TEMPMUTE, Pattern.compile("(\\S*) has muted player (\\S*) for (\\d+ \\S*).(Reason: (.*))?$"));
+		}
+		if (getModerationLogSetting("unban")) {
+			matchers.put(ModerationType.UNBAN, Pattern.compile("^Player (\\S*) unbanned (\\S*)$"));
+		}
+		if (getModerationLogSetting("unmute")) {
+			matchers.put(ModerationType.UNMUTE, Pattern.compile("^Player (\\S*) unmuted.*$"));
+		}
+		if (getModerationLogSetting("ipUnban")) {
+			matchers.put(ModerationType.UNBANIP, Pattern.compile("^Player (\\S*) unbanned IP: (\\S*$)"));
+		}
 
 		return matchers;
 	}
 
-	private ModerationLogEvent getModerationLogEvent(HashMap<ModerationType, Matcher> matchers)
-	{
+	private Optional<ModerationLogEvent> createModerationLogEvent(String message) {
 
-			Optional<ModerationLogEvent> opt = matchers.entrySet().stream().map( entry -> {
+		HashMap<ModerationType, Matcher> matchers = this.createMatcherList(message);
+		Optional<ModerationLogEvent> opt = matchers.entrySet().stream().map( entry -> {
 			ModerationType type = entry.getKey();
 			Matcher matcher = entry.getValue();
 
@@ -82,7 +107,7 @@ public class ModerationLogListener extends AbstractAppender {
 			return null;
 		} ).filter( Objects::nonNull ).findFirst();
 
-		return opt.orElse( null );
+		return opt;
 	}
 
 	private ModerationLogEvent createEvent(ModerationType type, Matcher matcher) {

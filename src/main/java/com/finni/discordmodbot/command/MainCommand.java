@@ -1,4 +1,4 @@
-package com.finni.discordmodbot.command.discord;
+package com.finni.discordmodbot.command;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -10,7 +10,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import com.finni.discordmodbot.DiscordModBot;
@@ -120,7 +119,7 @@ public class MainCommand extends BukkitCommand
 
 		if( this.plugin != null ){
 			commandSender.sendMessage("reloading....");
-			plugin.reloadConf();
+			plugin.reloadBot();
 		}
 
 		return true;

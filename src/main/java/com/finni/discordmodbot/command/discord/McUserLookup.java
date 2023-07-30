@@ -16,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
+import com.finni.discordmodbot.DiscordModBot;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -44,7 +45,6 @@ public class McUserLookup implements MessageCreateListener
 	YamlConfiguration config;
 
 	String commandPrefix;
-	//DiscordSRV discordsrv;
 
 	DiscordLinkService linkApi;
 
@@ -53,10 +53,10 @@ public class McUserLookup implements MessageCreateListener
 	List<Long> allowedChannels;
 
 
-	public McUserLookup( DiscordApi api, YamlConfiguration config )
+	public McUserLookup()
 	{
-		this.discordapi = api;
-		this.config = config;
+		this.discordapi = DiscordModBot.getInstance().getDiscordAPI();
+		this.config = DiscordModBot.getInstance().getMcModBotconfig();
 		this.linkApi = Bukkit.getServicesManager().load( DiscordLinkService.class );
 
 		this.allowedRoles = this.config.getStringList( "allowed-roles" )
@@ -218,8 +218,8 @@ public class McUserLookup implements MessageCreateListener
 
 	}
 
-	public static void createNewInstance(DiscordApi api, YamlConfiguration config){
-		McUserLookup.instance = new McUserLookup(api, config);
+	public static void createNewInstance(){
+		McUserLookup.instance = new McUserLookup();
 	}
 
 	public static McUserLookup getInstance() {

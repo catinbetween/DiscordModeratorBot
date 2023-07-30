@@ -2,4 +2,4 @@ name: DiscordModBot
 version: '${version}'
 main: com.finni.discordmodbot.DiscordModBot
 api-version: '1.20'
-depend: [EssentialsDiscord]
+depend: [Essentials, EssentialsDiscord, UltimateAutoRestart]
