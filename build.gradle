@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'com.finni'
-version = '2.0'
+version = '2.1'
 
 repositories {
 	mavenCentral()
@@ -69,11 +69,9 @@ jar {
 	duplicatesStrategy DuplicatesStrategy.EXCLUDE
 }
 
-tasks.register( 'cleanAndJarAndCopyJarToPluginFolder' ) {
-	clean
-	jar
+task cleanAndJarAndCopyJarToPluginFolder(dependsOn: ['clean', 'jar']) {
 	copy {
-		from 'build/libs/DiscordModBot-'+version+".jar"
-		into new File(pluginFolderPath).absolutePath
+		from 'build/libs/DiscordModBot-' + version + ".jar"
+		into new File( pluginFolderPath ).absolutePath
 	}
 }
