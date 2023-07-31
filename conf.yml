@@ -1,0 +1,20 @@
+# Example config
+bot-token: '<your-bot-token-here!>'
+command-channel-id: '123456781234567890'
+allowed-roles: [1111222233334444555,  1111222233334444555, 1111222233334444555]
+allowed-channels: [123456781234567890,  123456781234567890]
+
+logChannelID: '123456781234567890'
+moderationLogSettings:
+ - kick: true
+ - ban: true
+ - tempBan: true
+ - tempIPBan: true
+ - ipBan: true
+ - mute: true
+ - tempMute: true
+ - unban: true
+ - unmute: true
+ - ipUnban: true
+
+prefix: '!mcuser'
