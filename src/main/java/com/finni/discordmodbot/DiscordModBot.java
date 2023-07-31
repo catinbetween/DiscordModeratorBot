@@ -48,7 +48,7 @@ public class DiscordModBot extends JavaPlugin
 		instance = this;
 		File dir = this.getDataFolder(); //Your plugin folder
 
-		if (!dir.mkdirs())	{   //Make sure your plugin folder exists
+		if(!dir.exists() && !dir.mkdirs()) { //making sure the plugin folder exists
 			getLogger().severe("Plugin folder couldn't be created! Please provide a folder with the config.yml restart the server!");
 			getLogger().info("Disabling the plugin.");
 			getPluginLoader().disablePlugin(this);
