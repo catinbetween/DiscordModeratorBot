@@ -7,8 +7,6 @@ import com.earth2me.essentials.PlayerList;
 import com.earth2me.essentials.User;
 import net.essentialsx.api.v2.services.discord.*;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.metadata.MetadataValue;
 
 
 public class SlashPlayerList implements InteractionCommand {
@@ -17,12 +15,6 @@ public class SlashPlayerList implements InteractionCommand {
 	public SlashPlayerList(){
 	}
 
-	private boolean isVanished(Player player) {
-		for (MetadataValue meta : player.getMetadata("vanished")) {
-			if (meta.asBoolean()) return true;
-		}
-		return false;
-	}
 
 	@Override
 	public void onCommand( InteractionEvent event) {

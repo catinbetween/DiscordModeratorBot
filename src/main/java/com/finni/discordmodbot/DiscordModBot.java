@@ -6,7 +6,6 @@
 
 package com.finni.discordmodbot;
 
-/** @author Finn Teichmann */
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +31,8 @@ import com.finni.discordmodbot.listener.EssentialsDiscordModlogs;
 import net.essentialsx.api.v2.services.discord.DiscordService;
 import net.essentialsx.api.v2.services.discord.InteractionException;
 
+/** @author Finn Teichmann */
+
 
 public class DiscordModBot extends JavaPlugin
 {
@@ -48,7 +49,12 @@ public class DiscordModBot extends JavaPlugin
 	private void mcModBotLoadConf(){
 		instance = this;
 		File dir = this.getDataFolder(); //Your plugin folder
-		dir.mkdirs(); //Make sure your plugin folder exists
+
+		if (!dir.mkdirs())	{   //Make sure your plugin folder exists
+			getLogger().severe("Plugin folder couldn't be created! Please provide a folder with the config.yml restart the server!");
+			getLogger().info("Disabling the plugin.");
+			getPluginLoader().disablePlugin(this);
+		}
 
 		File conf = new File(this.getDataFolder() + "/conf.yml"); //This is your external file
 		this.mcModBotConfig = YamlConfiguration.loadConfiguration(conf); //Get the configuration of your external File
@@ -105,7 +111,7 @@ public class DiscordModBot extends JavaPlugin
 		new DiscordApiBuilder()
 			.setToken(this.mcModBotConfig.getString("bot-token")) // Set the token of the bot here
 			.setIntents( Intent.GUILD_PRESENCES, Intent.GUILD_MESSAGES, Intent.GUILD_MEMBERS, Intent.MESSAGE_CONTENT)
-			.login().thenAccept( api -> {this.discordAPI = api;} )
+			.login().thenAccept( api -> this.discordAPI = api )
 			.exceptionally(error -> {
 				// Log a warning when the login to Discord failed (wrong token?)
 				getLogger().severe("Failed to connect to Discord! Disabling plugin! Warning: "+error.getMessage());
@@ -184,7 +190,7 @@ public class DiscordModBot extends JavaPlugin
 	public DiscordLinkService getDiscordLinkService(){
 		return this.discordLinkService;
 	}
-	public YamlConfiguration getMcModBotconfig(){
+	public YamlConfiguration getMcModBotConfig(){
 		return this.mcModBotConfig;
 	}
 

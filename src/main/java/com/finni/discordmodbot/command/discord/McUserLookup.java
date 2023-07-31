@@ -6,8 +6,6 @@
 
 package com.finni.discordmodbot.command.discord;
 
-//import github.scarsz.discordsrv.DiscordSRV;
-
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -56,7 +54,7 @@ public class McUserLookup implements MessageCreateListener
 	public McUserLookup()
 	{
 		this.discordapi = DiscordModBot.getInstance().getDiscordAPI();
-		this.config = DiscordModBot.getInstance().getMcModBotconfig();
+		this.config = DiscordModBot.getInstance().getMcModBotConfig();
 		this.discordLinkService = DiscordModBot.getInstance().getDiscordLinkService();
 
 		this.allowedRoles = this.config.getStringList( "allowed-roles" )
@@ -86,13 +84,14 @@ public class McUserLookup implements MessageCreateListener
 			return;
 		}
 
-		User commanduser = null;
-
 		try
 		{
 			CompletableFuture<User> userF = discordapi.getUserById( event.getMessageAuthor().getId() );
 			userF.join();
-			commanduser = userF.get();
+			User commanduser = userF.get();
+
+			if(event.getServer().isEmpty())
+				return;
 
 			List<Role> dcuserRoles = event.getServer().get().getRoles( commanduser );
 
