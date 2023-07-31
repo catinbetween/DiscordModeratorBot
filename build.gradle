@@ -68,10 +68,3 @@ jar {
 	}
 	duplicatesStrategy DuplicatesStrategy.EXCLUDE
 }
-
-task copyJarToBin {
-	copy {
-		from 'build/libs/DiscordModBot-2.0.jar'
-		into "/home/catinbetween/mcserver/plugins"
-	}
-}

@@ -3,7 +3,6 @@ package com.finni.discordmodbot.event;
 import net.essentialsx.api.v2.services.discordlink.DiscordLinkService;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -14,10 +13,10 @@ import org.javacord.api.entity.message.MessageBuilder;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.message.mention.AllowedMentions;
 import org.javacord.api.entity.message.mention.AllowedMentionsBuilder;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.util.*;
-import java.util.List;
 
 
 public class ModerationLogEvent extends Event implements Cancellable
@@ -48,175 +47,104 @@ public class ModerationLogEvent extends Event implements Cancellable
 
 		AllowedMentions allowedMentions = new AllowedMentionsBuilder().addUser( api.getClientId()).build();
 
-	 	MessageBuilder a =  new MessageBuilder().setAllowedMentions( allowedMentions );
-		EmbedBuilder b = new EmbedBuilder();
+	 	MessageBuilder message =  new MessageBuilder().setAllowedMentions( allowedMentions );
+		EmbedBuilder embed = new EmbedBuilder();
 
 		switch( type ) {
 			case BAN:
-				b.setTitle( "Ban" );
-				if(this.affectedPlayer != null) {
-					Map<String,String> data = getPlayerData(discordLinkService);
-					if (data.get("name") != null) {
-						b.addField("MC-name", data.get("name"));
-						a.append(data.get("name")+"\n");
-					}
-					if (data.get("uuid") != null) {
-						b.addField("UUID", data.get("uuid"));
-						a.append(data.get("uuid")+"\n");
-					}
-					if(data.get("discordID") != null) {
-						b.addField("Discord ID", data.get("discordID"));
-					}
-				}
-				b.setColor( Color.decode("#fd6147") );
-				b.addField("Reason", reason);
-				b.addField("Moderator", moderator);
+				embed.setTitle( "Ban" );
+				addPlayerIDsAndNames( discordLinkService, message, embed );
+				embed.setColor( Color.decode("#fd6147") );
+				embed.addField("Reason", reason);
+				embed.addField("Moderator", moderator);
 				break;
 			case TEMPBAN:
-				b.setTitle("Temporary Ban");
-				if(this.affectedPlayer != null) {
-					Map<String,String> data = getPlayerData(discordLinkService);
-					if (data.get("name") != null) {
-						b.addField("MC-name", data.get("name"));
-						a.append(data.get("name")+"\n");
-					}
-					if (data.get("uuid") != null) {
-						b.addField("UUID", data.get("uuid"));
-						a.append(data.get("uuid")+"\n");
-					}
-					if(data.get("discordID") != null) {
-						b.addField("Discord ID", data.get("discordID"));
-					}
-				}
-				b.setColor( Color.decode("#f98977") );
-				b.addField("Duration", duration);
-				b.addField("Reason", reason);
-				b.addField("Moderator", moderator);
+				embed.setTitle("Temporary Ban");
+				addPlayerIDsAndNames( discordLinkService, message, embed );
+				embed.setColor( Color.decode("#f98977") );
+				embed.addField("Duration", duration);
+				embed.addField("Reason", reason);
+				embed.addField("Moderator", moderator);
 				break;
 			case IPBAN:
-				b.setTitle("IP-Ban");
-				b.setColor( Color.decode("#d93d3d") );
-				b.addField("IP-Address", affectedPlayer);
-				b.addField("Reason", reason);
-				b.addField("Moderator", moderator);
+				embed.setTitle("IP-Ban");
+				embed.setColor( Color.decode("#d93d3d") );
+				embed.addField("IP-Address", affectedPlayer);
+				embed.addField("Reason", reason);
+				embed.addField("Moderator", moderator);
 				break;
 			case TEMPIPBAN:
-				b.setTitle("Temporary IP-Ban");
-				b.setColor( Color.decode("#db6c6c") );
-				b.addField("IP-Address", affectedPlayer);
-				b.addField("Duration", duration);
-				b.addField("Reason", reason);
-				b.addField("Moderator", moderator);
+				embed.setTitle("Temporary IP-Ban");
+				embed.setColor( Color.decode("#db6c6c") );
+				embed.addField("IP-Address", affectedPlayer);
+				embed.addField("Duration", duration);
+				embed.addField("Reason", reason);
+				embed.addField("Moderator", moderator);
 				break;
 			case KICK:
-				b.setTitle("Kick");
-				if(this.affectedPlayer != null) {
-					Map<String,String> data = getPlayerData(discordLinkService);
-					if (data.get("name") != null) {
-						b.addField("MC-name", data.get("name"));
-						a.append(data.get("name")+"\n");
-					}
-					if (data.get("uuid") != null) {
-						b.addField("UUID", data.get("uuid"));
-						a.append(data.get("uuid")+"\n");
-					}
-					if(data.get("discordID") != null) {
-						b.addField("Discord ID", data.get("discordID"));
-					}
-				}
-				b.setColor( Color.decode("#fdae47") );
-				b.addField("Reason", reason);
-				b.addField("Moderator", moderator);
+				embed.setTitle("Kick");
+				addPlayerIDsAndNames( discordLinkService, message, embed );
+				embed.setColor( Color.decode("#fdae47") );
+				embed.addField("Reason", reason);
+				embed.addField("Moderator", moderator);
 				break;
 			case MUTE:
-				b.setTitle("Mute");
-				if(this.affectedPlayer != null) {
-					Map<String,String> data = getPlayerData(discordLinkService);
-					if (data.get("name") != null) {
-						b.addField("MC-name", data.get("name"));
-						a.append(data.get("name")+"\n");
-					}
-					if (data.get("uuid") != null) {
-						b.addField("UUID", data.get("uuid"));
-						a.append(data.get("uuid")+"\n");
-					}
-					if(data.get("discordID") != null) {
-						b.addField("Discord ID", data.get("discordID"));
-					}
-				}
-				b.setColor( Color.decode("#6e6e6e") );
-				b.addField("Duration", "Permanently");
-				b.addField("Reason", reason);
-				b.addField("Moderator", moderator);
+				embed.setTitle("Mute");
+				addPlayerIDsAndNames( discordLinkService, message, embed );
+				embed.setColor( Color.decode("#6e6e6e") );
+				embed.addField("Duration", "Permanently");
+				embed.addField("Reason", reason);
+				embed.addField("Moderator", moderator);
 				break;
 			case TEMPMUTE:
-				b.setTitle("Temporary Mute");
-				if(this.affectedPlayer != null) {
-					Map<String,String> data = getPlayerData(discordLinkService);
-					if (data.get("name") != null) {
-						b.addField("MC-name", data.get("name"));
-						a.append(data.get("name")+"\n");
-					}
-					if (data.get("uuid") != null) {
-						b.addField("UUID", data.get("uuid"));
-						a.append(data.get("uuid")+"\n");
-					}
-					if(data.get("discordID") != null) {
-						b.addField("Discord ID", data.get("discordID"));
-					}
-				}
-				b.setColor( Color.decode("#8b8a8a") );
-				b.addField("Duration", duration);
-				b.addField("Reason", reason);
-				b.addField("Moderator", moderator);
+				embed.setTitle("Temporary Mute");
+				addPlayerIDsAndNames( discordLinkService, message, embed );
+				embed.setColor( Color.decode("#8b8a8a") );
+				embed.addField("Duration", duration);
+				embed.addField("Reason", reason);
+				embed.addField("Moderator", moderator);
 				break;
 			case UNMUTE:
-				b.setTitle("Unmute");
-				if(this.affectedPlayer != null) {
-					Map<String,String> data = getPlayerData(discordLinkService);
-					if (data.get("name") != null) {
-						b.addField("MC-name", data.get("name"));
-						a.append(data.get("name")+"\n");
-					}
-					if (data.get("uuid") != null) {
-						b.addField("UUID", data.get("uuid"));
-						a.append(data.get("uuid")+"\n");
-					}
-					if(data.get("discordID") != null) {
-						b.addField("Discord ID", data.get("discordID"));
-					}
-				}
-				b.setColor( Color.decode("#5498b7") );
+				embed.setTitle("Unmute");
+				addPlayerIDsAndNames( discordLinkService, message, embed );
+				embed.setColor( Color.decode("#5498b7") );
 				break;
 			case UNBAN:
-				b.setTitle("Unban");
-				if(this.affectedPlayer != null) {
-					Map<String,String> data = getPlayerData(discordLinkService);
-					if (data.get("name") != null) {
-						b.addField("MC-name", data.get("name"));
-						a.append(data.get("name")+"\n");
-					}
-					if (data.get("uuid") != null) {
-						b.addField("UUID", data.get("uuid"));
-						a.append(data.get("uuid")+"\n");
-					}
-					if(data.get("discordID") != null) {
-						b.addField("Discord ID", data.get("discordID"));
-					}
-				}
-				b.setColor( Color.decode("#4798fd") );
-				b.addField("Moderator", moderator);
+				embed.setTitle("Unban");
+				addPlayerIDsAndNames( discordLinkService, message, embed );
+				embed.setColor( Color.decode("#4798fd") );
+				embed.addField("Moderator", moderator);
 				break;
 			case UNBANIP:
-				b.setTitle("IP-Unban");
-				b.setColor( Color.decode("#47a9fd") );
-				b.addField("IP-Address", affectedPlayer);
-				b.addField("Moderator", moderator);
+				embed.setTitle("IP-Unban");
+				embed.setColor( Color.decode("#47a9fd") );
+				embed.addField("IP-Address", affectedPlayer);
+				embed.addField("Moderator", moderator);
 			default:
 		}
-		a.setEmbed( b );
-		return a;
+		message.setEmbed( embed );
+		return message;
 	}
+
+
+	private void addPlayerIDsAndNames( DiscordLinkService discordLinkService, MessageBuilder message, EmbedBuilder embed )
+	{
+		if(this.affectedPlayer != null) {
+			Map<String,String> data = getPlayerData(discordLinkService);
+			if (data.get("name") != null) {
+				embed.addField("MC-name", data.get("name"));
+				message.append(data.get("name")+"\n");
+			}
+			if (data.get("uuid") != null) {
+				embed.addField("UUID", data.get("uuid"));
+				message.append(data.get("uuid")+"\n");
+			}
+			if(data.get("discordID") != null) {
+				embed.addField("Discord ID", data.get("discordID"));
+			}
+		}
+	}
+
 
 	private Map<String, String> getPlayerData(DiscordLinkService discordLinkService) {
 		Map<String, String> data = new HashMap<>();
@@ -225,13 +153,12 @@ public class ModerationLogEvent extends Event implements Cancellable
 			data.put( "name", affectedPLayer.getName());
 		}
 
-		if (affectedPLayer.getUniqueId() != null) {
-			data.put("uuid", affectedPLayer.getUniqueId().toString());
-			//todo: fix
-			/*String discordId = discordLinkService.getDiscordId(affectedPLayer.getUniqueId());
-			if (discordId != null)
-				data.put("discordID", discordId);*/
-		}
+		data.put("uuid", affectedPLayer.getUniqueId().toString());
+		//todo: fix
+		/*String discordId = discordLinkService.getDiscordId(affectedPLayer.getUniqueId());
+		if (discordId != null)
+			data.put("discordID", discordId);*/
+
 		return data;
 	}
 
@@ -282,7 +209,7 @@ public class ModerationLogEvent extends Event implements Cancellable
 	}
 
 	@Override
-	public HandlerList getHandlers() {
+	public @NotNull HandlerList getHandlers() {
 		return HANDLERS;
 	}
 

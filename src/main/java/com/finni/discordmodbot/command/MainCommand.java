@@ -55,22 +55,19 @@ public class MainCommand extends BukkitCommand
 		}
 
 		switch( args[0] ) {
-			case "reload":
+			case "reload" -> {
 				return reloadCommand( commandSender, args );
-			case "whatami":
-				if(commandSender instanceof Player ){
-					commandSender.sendMessage("You're a player");
+			} case "whatami" -> {
+				if( commandSender instanceof Player ) {
+					commandSender.sendMessage( "You're a player" );
+				} else if( commandSender instanceof ConsoleCommandSender ) {
+					commandSender.sendMessage( "You're a Console" );
 				}
-				else if(commandSender instanceof ConsoleCommandSender ){
-					commandSender.sendMessage("You're a Console");
-				}
-				break;
-			default:
-				commandSender.sendMessage("unrecognized command");
+			} default -> {
+				commandSender.sendMessage( "unrecognized command" );
 				return true;
+			}
 		}
-
-		if(!getAliases().contains(name)) return true;
 
 		return true;
 	}
@@ -85,8 +82,7 @@ public class MainCommand extends BukkitCommand
 		String description = "discordmodbot plugin";
 		String permission = "discordmodbot.admin";
 
-		BukkitCommand command = new MainCommand(permission, aliases.get(0), description, usage, aliases);
-		return command;
+		return new MainCommand(permission, aliases.get(0), description, usage, aliases);
 	}
 
 	public void registerMainCommand() {

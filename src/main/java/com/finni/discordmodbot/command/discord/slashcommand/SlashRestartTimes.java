@@ -6,8 +6,6 @@ import net.essentialsx.api.v2.services.discord.InteractionCommand;
 import net.essentialsx.api.v2.services.discord.InteractionCommandArgument;
 import net.essentialsx.api.v2.services.discord.InteractionEvent;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.metadata.MetadataValue;
 
 import java.util.List;
 
@@ -20,20 +18,11 @@ public class SlashRestartTimes implements InteractionCommand {
 		this.plugin = DiscordModBot.getInstance();
 	}
 
-	private boolean isVanished(Player player) {
-		for (MetadataValue meta : player.getMetadata("vanished")) {
-			if (meta.asBoolean()) return true;
-		}
-		return false;
-	}
-
 	@Override
 	public void onCommand( InteractionEvent event) {
-		CustomConsoleSender wrapped = new CustomConsoleSender(Bukkit.getServer().getConsoleSender(), event);
+		CustomConsoleSender wrapped = new CustomConsoleSender(Bukkit.getServer().getConsoleSender());
 		Bukkit.dispatchCommand(wrapped, "uar time");
-		Bukkit.getScheduler().runTaskLater(plugin, () -> {
-			event.reply(wrapped.getMessage());
-		}, 20L);
+		Bukkit.getScheduler().runTaskLater(plugin, () -> event.reply(wrapped.getMessage()), 20L);
 	}
 
 	@Override

@@ -1,22 +1,22 @@
 package com.finni.discordmodbot.listener;
 
 import com.finni.discordmodbot.DiscordModBot;
-import net.essentialsx.api.v2.services.discord.MessageType;
+
 import net.essentialsx.api.v2.services.discordlink.DiscordLinkService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.javacord.api.DiscordApi;
 import com.finni.discordmodbot.appender.ModerationLogListener;
 import com.finni.discordmodbot.event.ModerationLogEvent;
-import net.essentialsx.api.v2.services.discord.DiscordService;
+
+import org.javacord.api.entity.channel.Channel;
+import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.MessageBuilder;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -25,30 +25,27 @@ public class EssentialsDiscordModlogs implements Listener
 	private static final Logger rootLogger = (Logger) LogManager.getRootLogger();
 
 	static EssentialsDiscordModlogs instance;
-	private final YamlConfiguration config;
 
 	private final DiscordApi discordapi;
 	private  final DiscordLinkService discordLinkService;
 
-	private String logChannelID;
-	private MessageType channel;
+	private final String logChannelID;
 
-	private Map<String, Boolean> moderationLogSettings;
+	private final Map<String, Boolean> moderationLogSettings;
 
 	public EssentialsDiscordModlogs() {
 		this.discordapi = DiscordModBot.getInstance().getDiscordAPI();
-		this.config = DiscordModBot.getInstance().getMcModBotconfig();
 		this.discordLinkService = Bukkit.getServicesManager().load( DiscordLinkService.class );
 		ModerationLogListener logAppender = new ModerationLogListener();
 		rootLogger.addAppender( logAppender );
 
-		moderationLogSettings = DiscordModBot.getInstance().getMcModBotconfig()
+		moderationLogSettings = DiscordModBot.getInstance().getMcModBotConfig()
 				.getMapList("moderationLogSettings").stream()
 				.flatMap(e->e.entrySet().stream())
 				.map(entry -> ((Map.Entry<String, Boolean>)entry))
-				.collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+				.collect(Collectors.toMap( Map.Entry::getKey, Map.Entry::getValue ));
 
-		this.logChannelID = this.config.getString( "logChannelID" );
+		this.logChannelID = DiscordModBot.getInstance().getMcModBotConfig().getString( "logChannelID" );
 
 	}
 
@@ -69,8 +66,8 @@ public class EssentialsDiscordModlogs implements Listener
 
 		if( !event.isCancelled() ) {
 			MessageBuilder message = event.toDiscordEmbed(discordapi, discordLinkService);
-			message.send(discordapi.getChannelById( logChannelID).get().asTextChannel().get());
-			//discordapi.getChannelById( logChannelID).get().asTextChannel().get().sendMessage( event.toMessage() );
+			Optional<TextChannel> channel = discordapi.getChannelById( logChannelID ).flatMap( Channel::asTextChannel );
+			channel.ifPresent( message::send );
 		}
 	}
 

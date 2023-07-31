@@ -20,37 +20,35 @@ public class ModerationLogListener extends AbstractAppender {
 
 	public ModerationLogListener() {
 		// do your calculations here before starting to capture
-		super("ModerationLogListener", null, null);
+		super("ModerationLogListener", null, null, false, null);
 		start();
 
-		this.moderationLogSettings = DiscordModBot.getInstance().getMcModBotconfig()
+		this.moderationLogSettings = DiscordModBot.getInstance().getMcModBotConfig()
 				.getMapList("moderationLogSettings").stream()
 				.flatMap(e->e.entrySet().stream())
 				.map(entry -> ((Map.Entry<String, Boolean>)entry))
-				.collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+				.collect(Collectors.toMap( Map.Entry::getKey, Map.Entry::getValue ));
 
 		patterns = createPatternList();
 	}
 
 	@Override
 	public void append(LogEvent event) {
-		LogEvent log = event.toImmutable();
 
 		if (event.getLoggerName().equals( "Essentials" ) || event.getMessage().getFormat().replaceAll( "\u001B\\[\\d\\d?m", "" ).matches( "^Player (\\S*) unmuted.*$" )
 				|| event.getMessage().getFormat().matches( "(^Banned IP \\S*:(.*)$)|(\\S*: Banned IP \\S*:.*)" )) {
 			String message = event.getMessage().getFormat().replaceAll( "\u001B\\[\\d\\d?m", "" );
 
 			createModerationLogEvent( message ).ifPresent(modEvent -> Bukkit.getPluginManager().callEvent(modEvent));
-
 		}
-
 	}
+
 	private boolean getModerationLogSetting(String key) {
 		return moderationLogSettings.get(key);
 	}
 
 	private HashMap<ModerationType, Matcher> createMatcherList(String string) {
-		return patterns.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue().matcher(string), (prev, next) -> next, HashMap::new));
+		return patterns.entrySet().stream().collect(Collectors.toMap( Map.Entry::getKey, entry -> entry.getValue().matcher(string), (prev, next) -> next, HashMap::new));
 	}
 	private HashMap<ModerationType, Pattern> createPatternList() {
 		HashMap<ModerationType, Pattern> matchers = new HashMap<>();
@@ -98,7 +96,8 @@ public class ModerationLogListener extends AbstractAppender {
 	private Optional<ModerationLogEvent> createModerationLogEvent(String message) {
 
 		HashMap<ModerationType, Matcher> matchers = this.createMatcherList(message);
-		Optional<ModerationLogEvent> opt = matchers.entrySet().stream().map( entry -> {
+
+		return matchers.entrySet().stream().map( entry -> {
 			ModerationType type = entry.getKey();
 			Matcher matcher = entry.getValue();
 
@@ -106,129 +105,95 @@ public class ModerationLogListener extends AbstractAppender {
 				return createEvent( type, matcher );
 			return null;
 		} ).filter( Objects::nonNull ).findFirst();
-
-		return opt;
 	}
 
 	private ModerationLogEvent createEvent(ModerationType type, Matcher matcher) {
 
 		ModerationLogEvent event = null;
-		switch( type )
-		{
-			case BAN:
+		switch( type ) {
+			case BAN -> {
 				event = new ModerationLogEvent();
 				event.setType( ModerationType.BAN );
 				event.setModerator( matcher.group( 1 ) );
 				event.setAffectedPlayer( matcher.group( 2 ) );
 				event.setReason( matcher.group( 3 ).replaceAll( "\n", "" ) );
 				event.setDuration( "permanently" );
-				break;
-
-			case TEMPBAN:
+			}case TEMPBAN -> {
 				event = new ModerationLogEvent();
 				event.setType( ModerationType.TEMPBAN );
 				event.setModerator( matcher.group( 1 ) );
 				event.setAffectedPlayer( matcher.group( 2 ) );
 				event.setDuration( matcher.group( 3 ) );
 				event.setReason( matcher.group( 4 ) );
-				break;
-
-			case TEMPIPBAN:
+			} case TEMPIPBAN -> {
 				event = new ModerationLogEvent();
 				event.setType( ModerationType.TEMPIPBAN );
 				event.setModerator( matcher.group( 1 ) );
 				event.setAffectedPlayer( matcher.group( 2 ) );
 				event.setDuration( matcher.group( 3 ) );
-				if( matcher.groupCount() > 3 && matcher.group(4) != null)
-				{
+				if( matcher.groupCount() > 3 && matcher.group( 4 ) != null ) {
 					event.setReason( matcher.group( 4 ) );
-				}
-				else
-				{
+				} else {
 					event.setReason( "(none given)" );
 				}
-				break;
-
-			case IPBAN1:
+			} case IPBAN1 -> {
 				event = new ModerationLogEvent();
 				event.setType( ModerationType.IPBAN );
 				event.setModerator( "(Unknown, Probably The Console though)" );
 				event.setAffectedPlayer( matcher.group( 1 ) );
 				event.setReason( matcher.group( 2 ) );
 				event.setDuration( "permanently" );
-				break;
-
-			case IPBAN2:
-				String string= "";
-			case IPBAN3:
+			} case IPBAN2, IPBAN3 -> {
 				event = new ModerationLogEvent();
 				event.setType( ModerationType.IPBAN );
 				event.setModerator( matcher.group( 1 ) );
 				event.setAffectedPlayer( matcher.group( 2 ) );
 				event.setReason( matcher.group( 3 ) );
 				event.setDuration( "permanently" );
-				break;
-
-			case KICK:
+			} case KICK -> {
 				event = new ModerationLogEvent();
 				event.setType( ModerationType.KICK );
 				event.setModerator( matcher.group( 1 ) );
 				event.setAffectedPlayer( matcher.group( 2 ) );
 				event.setReason( matcher.group( 3 ) );
-				break;
-
-			case MUTE:
+			} case MUTE -> {
 				event = new ModerationLogEvent();
 				event.setType( ModerationType.MUTE );
 				event.setModerator( matcher.group( 1 ) );
 				event.setAffectedPlayer( matcher.group( 2 ) );
 				event.setDuration( "permanently" );
-				if( matcher.groupCount() > 3 && matcher.group(4) != null)
-				{
+				if( matcher.groupCount() > 3 && matcher.group( 4 ) != null ) {
 					event.setReason( matcher.group( 4 ) );
-				}
-				else
-				{
+				} else {
 					event.setReason( "(none given)" );
 				}
-				break;
-
-			case TEMPMUTE:
+			} case TEMPMUTE -> {
 				event = new ModerationLogEvent();
 				event.setType( ModerationType.TEMPMUTE );
 				event.setModerator( matcher.group( 1 ) );
 				event.setAffectedPlayer( matcher.group( 2 ) );
 				event.setDuration( matcher.group( 3 ) );
-				if( matcher.groupCount() > 4 && (matcher.group(5) != null) )
-				{
+				if( matcher.groupCount() > 4 && ( matcher.group( 5 ) != null ) ) {
 					event.setReason( matcher.group( 5 ) );
-				}
-				else
-				{
+				} else {
 					event.setReason( "(none)" );
 				}
-				break;
-
-			case UNMUTE:
+			} case UNMUTE -> {
 				event = new ModerationLogEvent();
 				event.setType( ModerationType.UNMUTE );
 				event.setModerator( "(Unknown)" );
 				event.setAffectedPlayer( matcher.group( 1 ) );
-				break;
-
-			case UNBAN:
+			} case UNBAN -> {
 				event = new ModerationLogEvent();
 				event.setType( ModerationType.UNBAN );
 				event.setModerator( matcher.group( 1 ) );
 				event.setAffectedPlayer( matcher.group( 2 ) );
-				break;
-
-			case UNBANIP:
+			} case UNBANIP -> {
 				event = new ModerationLogEvent();
 				event.setType( ModerationType.UNBANIP );
 				event.setModerator( matcher.group( 1 ) );
 				event.setAffectedPlayer( matcher.group( 2 ) );
-				break;
+			}
 		}
 
 		return event;
