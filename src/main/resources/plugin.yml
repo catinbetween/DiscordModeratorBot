@@ -1,6 +1,5 @@
-
-name: 'discordModBot'
-version: 1.1
-main: com.finni.discordmodbot.discordModBot
-api-version: 1.18
-depend: [EssentialsDiscord]
+name: DiscordModBot
+version: '${version}'
+main: com.finni.discordmodbot.DiscordModBot
+api-version: '1.20'
+depend: [Essentials, EssentialsDiscord, UltimateAutoRestart]
