@@ -27,11 +27,6 @@ public class SlashPlayerList implements InteractionCommand {
 
 		String summary = PlayerList.listSummary(essentials,null, false);
 		Map<String, List<User>> users = PlayerList.getPlayerLists(essentials, null, false);
-		/*List<String> a = users.entrySet().stream().map(e -> {
-			String key = e.getKey();
-			List<User> values = e.getValue();
-			return (key.equals("default") ? "Players" : key) + ":\n" + PlayerList.listUsers(essentials, values, ",") + "\n\n";
-		}).toList(); */
 
 		// remaking the map in the right order
 		String returnv = "";
