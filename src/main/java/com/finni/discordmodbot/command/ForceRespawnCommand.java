@@ -12,7 +12,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-//Credit:  NobreHD
+//Credit:  NobreHD for the base idea
 public class ForceRespawnCommand extends BukkitCommand
 {
 
@@ -45,16 +45,38 @@ public class ForceRespawnCommand extends BukkitCommand
 	@Override
 	public boolean execute(@NotNull CommandSender commandSender, @NotNull String name, @NotNull String[] args) {
 
-		commandSender.sendMessage("forcing respawns!");
-		plugin.getLogger().info("forcing respawns");
 
-		for (Player player : Bukkit.getOnlinePlayers()){
-			if (player.isDead()){
-				player.spigot().respawn();
+
+		if(args.length == 1) {
+			Player player = Bukkit.getPlayerExact(args[0]);
+			if(player != null) {
+				if(!player.isDead()){
+					commandSender.sendRichMessage("<yellow>" + player.getName() + " is not dead.</yellow>");
+					return true;
+				}
+				commandSender.sendRichMessage("<yellow> Respawned " + player.getName() + "!</yellow>");
 				plugin.getLogger().info("Respawned " + player.getName());
-			}
-		}
+				player.spigot().respawn();
+            } else {
+				commandSender.sendRichMessage("<red>Player " + args[0] + " couldn't be found! :(</red>");
+            }
+        } else if(args.length > 1){
+				commandSender.sendRichMessage(this.getUsage());
+		} else {
+			commandSender.sendRichMessage("<yellow>Forcing respawns for all dead players!</yellow>");
+			plugin.getLogger().info("Forcing respawns for all dead players!");
 
+			Integer respawnedPLayers = 0;
+			for (Player player : Bukkit.getOnlinePlayers()){
+				if (player.isDead()){
+					player.spigot().respawn();
+					commandSender.sendRichMessage("<yellow> Respawned " + player.getName() + "!</yellow>");
+					plugin.getLogger().info("Respawned " + player.getName());
+				}
+			}
+			commandSender.sendRichMessage("<yellow>Successfully respawned " + respawnedPLayers + " players!</yellow>");
+			plugin.getLogger().info("Successfully respawned " + respawnedPLayers + " players");
+		}
 		return true;
 	}
 
@@ -64,7 +86,7 @@ public class ForceRespawnCommand extends BukkitCommand
 		aliases.add("forcePlayerRespawn"); // Our main command name, this can be from a config or somewhere else
 		aliases.add("fr"); // Our main command name, this can be from a config or somewhere else
 
-		String usage = "/fr  or /forcePlayerRespawn";
+		String usage = "Usage: /forcePlayerRespawn <player>  or /forcePlayerRespawn";
 		String description = "forcing player respawn (WARNING: only intended to be used before restart!!)";
 		String permission = "discordmodbot.admin";
 
