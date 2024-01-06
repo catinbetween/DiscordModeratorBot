@@ -78,7 +78,7 @@ public class MainCommand extends BukkitCommand
 		aliases.add("discordmodbot"); // Our main command name, this can be from a config or somewhere else
 		aliases.add("dmb"); // Our main command name, this can be from a config or somewhere else
 
-		String usage = "/<command>";
+		String usage = "/discordmodbot <argument>";
 		String description = "discordmodbot plugin";
 		String permission = "discordmodbot.admin";
 

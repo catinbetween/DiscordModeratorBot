@@ -13,6 +13,7 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.stream.Stream;
 
+import com.finni.discordmodbot.command.ForceRespawnCommand;
 import com.finni.discordmodbot.command.discord.slashcommand.*;
 import net.essentialsx.api.v2.services.discord.MessageType;
 import net.essentialsx.api.v2.services.discordlink.DiscordLinkService;
@@ -28,7 +29,6 @@ import com.finni.discordmodbot.command.discord.McUserLookup;
 import com.finni.discordmodbot.listener.EssentialsDiscordModlogs;
 
 import net.essentialsx.api.v2.services.discord.DiscordService;
-import net.essentialsx.api.v2.services.discord.InteractionException;
 
 /** @author Finn Teichmann */
 
@@ -42,6 +42,7 @@ public class DiscordModBot extends JavaPlugin
 	private DiscordApi discordAPI;
 	private YamlConfiguration mcModBotConfig;
 	private MainCommand mainDMBCommand;
+	private ForceRespawnCommand forceRespawncommand;
 	private MessageType logChannel;
 
 
@@ -85,7 +86,8 @@ public class DiscordModBot extends JavaPlugin
 		this.mcModBotLoadConf();
 		this.mainDMBCommand = (MainCommand)MainCommand.getNewInstance();
 		this.mainDMBCommand.setPlugin( this );
-		this.mainDMBCommand.registerMainCommand();
+		this.forceRespawncommand = (ForceRespawnCommand)ForceRespawnCommand.getNewInstance();
+		this.forceRespawncommand.setPlugin( this );
 
 		this.discordService = Bukkit.getServicesManager().load(DiscordService.class);
 		try {
