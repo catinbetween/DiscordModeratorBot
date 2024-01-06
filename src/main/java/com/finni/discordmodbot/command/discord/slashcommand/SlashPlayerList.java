@@ -48,7 +48,7 @@ public class SlashPlayerList implements InteractionCommand {
 				.replace("maximum ","maximum `")
 				.replace(" players","` players") + "\n\n";
 
-		List<Map.Entry<String, List<User>>> users2 = new ArrayList<Map.Entry<String, List<User>>>(5);
+		List<Map.Entry<String, List<User>>> users2 = new ArrayList<>(5);
 		for(int i=0; i<6; i++){ users2.add(null); }
 		for(Map.Entry<String, List<User>> e : users.entrySet()) {
 			String key = e.getKey();
@@ -64,24 +64,21 @@ public class SlashPlayerList implements InteractionCommand {
 			users2.add(priority, new AbstractMap.SimpleEntry<>(key, values));
 		}
 		for(Map.Entry<String, List<User>> e : users2) {
-			if(e == null || e.getValue().size() == 0){ continue;}
+			if(e == null || e.getValue().isEmpty()){ continue;}
 			returnv += "__" + e.getKey() + "__: ";
-			e.getValue().sort(new Comparator<User>() {
-				@Override
-				public int compare(User o1, User o2) {
+			e.getValue().sort((o1, o2) -> {
 
-					if (o1.isAfk() == o2.isAfk() && !o1.isAfk()) {
-						return o1.getName().compareToIgnoreCase(o2.getName());
-					} else if (o1.isAfk() == o2.isAfk() && o1.isAfk()) {
-						return o1.getName().compareToIgnoreCase(o2.getName());
-					} else if (o1.isAfk() && !o2.isAfk()) {
-						return 1;
-					} else if (!o1.isAfk() && o2.isAfk()) {
-						return -1;
-					}
-					return 0;
-				}
-			});
+                if (o1.isAfk() == o2.isAfk() && !o1.isAfk()) {
+                    return o1.getName().compareToIgnoreCase(o2.getName());
+                } else if (o1.isAfk() == o2.isAfk() && o1.isAfk()) {
+                    return o1.getName().compareToIgnoreCase(o2.getName());
+                } else if (o1.isAfk() && !o2.isAfk()) {
+                    return 1;
+                } else if (!o1.isAfk() && o2.isAfk()) {
+                    return -1;
+                }
+                return 0;
+            });
 			for(User player : e.getValue()){
 				returnv += "`" + player.getName().replace("[AFK]", "[AFK] ") + ", ";
 			}
