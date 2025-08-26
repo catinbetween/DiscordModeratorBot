@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "discordmodbot",
+  "version": "${version}",
+  "name": "DiscordModBot",
+  "description": "Adding some slash commands to the simple-discord-link mod",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      "com.catinbetween.minecraft.discordmodbot.DiscordModBot"
+    ]
+  },
+  "mixins": [
+    "discordmodbot.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}",
+    "sdlink": ">=3.3.2"
+  }
+}
