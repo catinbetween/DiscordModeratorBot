@@ -1,6 +1,6 @@
 package com.catinbetween.minecraft.discordmodbot.config;
 
-import com.catinbetween.minecraft.discordmodbot.DiscordModBot;
+import com.catinbetween.minecraft.discordmodbot.Discordmodbot;
 import com.catinbetween.minecraft.discordmodbot.slashcommand.WhoisSlashCommand;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -9,12 +9,10 @@ import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.JDABuilder;
 import com.hypherionmc.sdlink.shaded.jagrosh.jdautilities.command.CommandClient;
 import com.hypherionmc.sdlink.shaded.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.mojang.brigadier.context.CommandContext;
-
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import org.apache.logging.log4j.Level;
-
 
 import java.io.File;
 import java.io.FileReader;
@@ -23,7 +21,7 @@ import java.io.FileWriter;
 @Log4j2
 public class DiscordModBotConfig {
     private static final File configDir = new File("config/discordmodbot");
-    private static final File configFile = new File("config/discordmodbot/" + DiscordModBot.MOD_ID + "_config.json");
+    private static final File configFile = new File("config/discordmodbot/" + Discordmodbot.MOD_ID + "_config.json");
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().setLenient().serializeNulls().create();
     public static DiscordModBotConfig INSTANCE = new DiscordModBotConfig();
 

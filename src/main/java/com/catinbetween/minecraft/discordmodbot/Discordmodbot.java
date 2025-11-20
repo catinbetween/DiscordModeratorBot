@@ -2,15 +2,9 @@ package com.catinbetween.minecraft.discordmodbot;
 
 import com.catinbetween.minecraft.discordmodbot.command.MeowCommand;
 import com.catinbetween.minecraft.discordmodbot.config.DiscordModBotConfig;
-import com.catinbetween.minecraft.discordmodbot.slashcommand.WhoisSlashCommand;
-import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.JDA;
-import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.JDABuilder;
-import com.hypherionmc.sdlink.shaded.jagrosh.jdautilities.command.CommandClient;
-import com.hypherionmc.sdlink.shaded.jagrosh.jdautilities.command.CommandClientBuilder;
-import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
-import lombok.extern.java.Log;
 import net.fabricmc.api.ModInitializer;
+
+import lombok.extern.java.Log;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
@@ -19,21 +13,20 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 @Log
-public class DiscordModBot implements ModInitializer {
-    public static final String  MAIN_COMMAND_PERMISSION = "discordmodbot.admin";
+public class Discordmodbot implements ModInitializer {
     public static final String MOD_ID = "DiscordModBot";
     public static final String MOD_NAME = "DiscordModeratorBot";
-    public static final String MOD_VER = "3.0.0";
+    public static final String MAIN_COMMAND_PERMISSION = "discordmodbot.admin";
+    public static final String MOD_VERSION = "1.0.0";
 
     public static final Logger LOGGER = LogManager.getLogger();
 
     @Override
     public void onInitialize() {
-        log.info("version " + MOD_VER);
+        log.info("version " + MOD_VERSION);
         DiscordModBotConfig.loadConfig();
 
 

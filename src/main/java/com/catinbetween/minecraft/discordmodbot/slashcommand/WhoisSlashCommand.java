@@ -1,19 +1,18 @@
 package com.catinbetween.minecraft.discordmodbot.slashcommand;
 
-import com.hypherionmc.sdlink.core.config.SDLinkConfig;
 import com.hypherionmc.sdlink.core.database.SDLinkAccount;
 import com.hypherionmc.sdlink.core.discord.commands.slash.SDLinkSlashCommand;
 import com.hypherionmc.sdlink.core.managers.DatabaseManager;
 import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.EmbedBuilder;
+import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.entities.Member;
 import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.interactions.commands.OptionType;
 import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.interactions.commands.build.OptionData;
 import com.hypherionmc.sdlink.shaded.jagrosh.jdautilities.command.SlashCommandEvent;
-import com.hypherionmc.sdlink.shaded.dv8tion.jda.api.entities.Member;
 import lombok.extern.log4j.Log4j2;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.Optional;
 
 @Log4j2
 public class WhoisSlashCommand extends SDLinkSlashCommand {

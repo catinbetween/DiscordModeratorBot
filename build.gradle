@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.11-SNAPSHOT'
+    id 'fabric-loom' version '1.13-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -11,17 +11,23 @@ base {
 }
 
 
-repositories {
-    maven {
-        name "firstdarkMavenReleases"
-        url "https://maven.firstdark.dev/releases"
+fabricApi {
+    configureDataGeneration {
+        client = true
     }
+}
 
+repositories {
     // Add repositories to retrieve artifacts from in here.
     // You should only use this when depending on other mods because
     // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
+
+    maven {
+        name "firstdarkMavenReleases"
+        url "https://maven.firstdark.dev/releases"
+    }
 }
 
 dependencies {
@@ -29,6 +35,7 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
     compileOnly 'org.projectlombok:lombok:1.18.38'
     annotationProcessor 'org.projectlombok:lombok:1.18.38'
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
