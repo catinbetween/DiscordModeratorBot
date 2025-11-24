@@ -10,7 +10,7 @@ Originally developed for [The Clicks](https://www.youtube.com/channel/UCPr3T20IP
 
 ## Features
 
-### 🔍 Advanced Player Lookup (`/whois` command)
+### Advanced Player Lookup (`/whois` command)
 - **Multi-parameter search**: Look up players by Minecraft username, UUID, Discord user, or Discord user ID
 - **Comprehensive identity tracking**: History of all Minecraft and Discord accounts used by a player
 - **Account linking status**: See current, historical, and pending verification states
