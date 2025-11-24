@@ -1,6 +1,6 @@
 # DiscordModeratorBot
 
-**Minecraft Version:** 1.20.1  
+**Minecraft Version:** 1.21.10  
 **License:** MPL-2.0
 
 A Fabric mod extension for Minecraft servers that integrates with [Simple Discord Link](https://github.com/hypherionmc/Simple-Discord-Link) to enhance its user linking features with a user history, as the original Simple Discord Link only keeps track of the current linked accounts.
