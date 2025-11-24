@@ -39,9 +39,12 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.38'
     annotationProcessor 'org.projectlombok:lombok:1.18.38'
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    compileOnly 'net.luckperms:api:5.4'
-    implementation "com.hypherionmc.sdlink:sdlink:3.2.1"
-    compileOnly "com.hypherionmc.craterlib:CraterLib-Fabric-1.21.3:2.1.5"
+    compileOnly 'net.luckperms:api:5.5'
+    implementation "com.hypherionmc.sdlink:sdlink:3.3.3"
+    compileOnly "com.hypherionmc.craterlib:CraterLib-Fabric-1.21:2.1.5"
+
+    include(implementation('org.xerial:sqlite-jdbc:3.46.0.0'))
+
 }
 
 processResources {

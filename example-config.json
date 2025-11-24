@@ -1,0 +1,16 @@
+{
+  "botToken": "YOUR_BOT_TOKEN_HERE",
+  "guildID": "YOUR_DISCORD_SERVER_ID",
+  "ownerID": "YOUR_DISCORD_USER_ID",
+  "commandChannelId": "",
+  "logChannelID": "",
+  "allowedRoles": [
+    "MODERATOR_ROLE_ID",
+    "ADMIN_ROLE_ID"
+  ],
+  "allowedChannels": [
+    "ALLOWED_CHANNEL_ID"
+  ],
+  "logLevel": "INFO"
+}
+
