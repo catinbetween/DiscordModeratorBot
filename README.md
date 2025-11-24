@@ -171,4 +171,4 @@ This mod is open source under the MPL-2.0 license. Contributions, bug reports, a
 - **JDA**: Discord API integration
 - **Fabric**: Minecraft modding framework
 - **The Clique Community**: Testing and feedback
-- **FinleyOfTheWoods**: Borrowed some manager classes that they had originally written for their own discord mods :] (check out their github) [https://github.com/FinleyOfTheWoods]
+- **FinleyOfTheWoods**: Borrowed some manager classes that they had originally written for their own discord mods :] [Check out their github!](https://github.com/FinleyOfTheWoods)
