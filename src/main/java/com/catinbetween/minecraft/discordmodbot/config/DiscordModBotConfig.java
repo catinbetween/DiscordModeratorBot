@@ -10,8 +10,8 @@ import com.hypherionmc.sdlink.shaded.jagrosh.jdautilities.command.CommandClient;
 import com.hypherionmc.sdlink.shaded.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import lombok.extern.log4j.Log4j2;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 
 import java.io.File;
 import java.io.FileReader;
@@ -80,12 +80,12 @@ public class DiscordModBotConfig {
         }
     }
 
-    public static int commandReload(CommandContext<ServerCommandSource> context) {
+    public static int commandReload(CommandContext<CommandSourceStack> context) {
 
-        context.getSource().sendFeedback(() -> Text.literal("DiscordModBot: Reloading config..."), false);
+        context.getSource().sendSuccess(() -> Component.literal("DiscordModBot: Reloading config..."), false);
         log.info("Reloading config...");
         loadConfig();
-        context.getSource().sendFeedback(() -> Text.literal("DiscordModBot: Config reloaded."), false);
+        context.getSource().sendSuccess(() -> Component.literal("DiscordModBot: Config reloaded."), false);
         log.info("Config reloaded.");
         return 1;
     }

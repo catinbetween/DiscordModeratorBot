@@ -9,11 +9,12 @@ import com.hypherionmc.sdlink.core.managers.DatabaseManager;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.literal;
 
 
 public class DiscordModBot implements ModInitializer {
@@ -29,7 +30,7 @@ public class DiscordModBot implements ModInitializer {
         DiscordModBotConfig.loadConfig();
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(literal("dmb")
-                    .then(literal("reload").executes(DiscordModBotConfig::commandReload)).requires(source -> hasPermission(source.getPlayer(),MAIN_COMMAND_PERMISSION,4))
+                    .then(literal("reload").executes(DiscordModBotConfig::commandReload)).requires(source -> isOpOrHasLpPermission(source, MAIN_COMMAND_PERMISSION))
 
             );
         });
@@ -47,7 +48,7 @@ public class DiscordModBot implements ModInitializer {
         LOGGER.info("Initialized Database and SDLink integration successfully");
     }
 
-    /*private boolean hasPermission(ServerPlayerEntity player, String permission) {
+    /*private boolean isOpOrHasLpPermission(ServerPlayerEntity player, String permission) {
         LuckPerms luckPerms = null;
         try {
             luckPerms = LuckPermsProvider.get();
@@ -61,7 +62,9 @@ public class DiscordModBot implements ModInitializer {
         return luckpermsuser.getCachedData().getPermissionData().checkPermission( MAIN_COMMAND_PERMISSION).asBoolean();
     }*/
 
-    private boolean hasPermission(ServerPlayerEntity player, String permission, Integer opLevel) {
-        return player.getPermissionLevel() == opLevel /*|| hasPermission(player, permission)*/;
+    private boolean isOpOrHasLpPermission(CommandSourceStack source, String lpPermission) {
+        return !source.getServer().getPlayerList().getOps().isEmpty()
+                && source.getPlayer() != null
+                && source.getServer().getPlayerList().isOp(source.getPlayer().nameAndId());
     }
 }

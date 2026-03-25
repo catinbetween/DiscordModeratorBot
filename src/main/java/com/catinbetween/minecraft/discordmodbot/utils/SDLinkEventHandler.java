@@ -8,7 +8,7 @@ import com.hypherionmc.sdlink.api.events.VerificationEvent;
 import com.hypherionmc.sdlink.core.database.SDLinkAccount;
 import com.hypherionmc.sdlink.core.managers.DatabaseManager;
 import lombok.extern.log4j.Log4j2;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -118,10 +118,10 @@ public class SDLinkEventHandler {
      * Handles an event when a player joins the server
      * Use this to catch Minecraft username changes
      * */
-    public void onPlayerJoin(ServerPlayerEntity player) {
-        UUID uuid = player.getUuid();
+    public void onPlayerJoin( ServerPlayer player) {
+        UUID uuid = player.getUUID();
         try {
-            SDLinkAccount account = DatabaseManager.INSTANCE.findById(player.getUuid().toString(), SDLinkAccount.class);
+            SDLinkAccount account = DatabaseManager.INSTANCE.findById(player.getUUID().toString(), SDLinkAccount.class);
             if (isFullyVerified(account)) {
                 syncAccount(account);
                log.debug("Synced player on join: {}", player.getName().getString());
